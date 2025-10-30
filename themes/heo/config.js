@@ -118,7 +118,7 @@ const CONFIG = {
   HEO_SOCIAL_CARD_TITLE_1: '公众号 yearn1ng',
   HEO_SOCIAL_CARD_TITLE_2: '山山而川 人生海海 不过尔尔',
   HEO_SOCIAL_CARD_TITLE_3: '点击关注「yearn1ng」',
-  HEO_SOCIAL_CARD_URL: '/',
+  HEO_SOCIAL_CARD_URL: 'https://wechaturl.netlify.app/',
 
   // 底部统计面板文案
   HEO_POST_COUNT_TITLE: '文章数:',
