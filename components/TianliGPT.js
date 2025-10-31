@@ -17,6 +17,67 @@ const TianLiGPT = () => {
   useEffect(() => {
     if (!tianliKey) return
 
+    // 打字机效果函数
+    const showTypingAnimation = (text) => {
+      const element = document.querySelector('.tianliGPT-explanation')
+      if (!element) return
+
+      let currentIndex = 0
+      const typingDelay = 25 // 每个字符的延迟(毫秒)
+      const punctuationDelayMultiplier = 6 // 标点符号延迟倍数
+      let animationRunning = true
+      let lastUpdateTime = performance.now()
+
+      const animate = () => {
+        if (currentIndex < text.length && animationRunning) {
+          const currentTime = performance.now()
+          const timeDiff = currentTime - lastUpdateTime
+
+          const letter = text.slice(currentIndex, currentIndex + 1)
+          const isPunctuation = /[，。！、？,.!?]/.test(letter)
+          const delay = isPunctuation ? typingDelay * punctuationDelayMultiplier : typingDelay
+
+          if (timeDiff >= delay) {
+            currentIndex++
+            element.innerHTML = text.slice(0, currentIndex) + '<span class="blinking-cursor"></span>'
+            lastUpdateTime = currentTime
+
+            if (currentIndex >= text.length) {
+              // 动画完成,移除光标和加载动画
+              element.innerHTML = text
+              const aiTag = document.querySelector('.tianliGPT-tag')
+              if (aiTag) {
+                aiTag.classList.remove('loadingAI')
+              }
+              observer.disconnect()
+            }
+          }
+          requestAnimationFrame(animate)
+        }
+      }
+
+      // 使用 IntersectionObserver 检测元素是否在视口中
+      const observer = new IntersectionObserver(
+        (entries) => {
+          animationRunning = entries[0].isIntersecting
+          if (animationRunning && currentIndex === 0) {
+            setTimeout(() => {
+              requestAnimationFrame(animate)
+            }, 200)
+          }
+        },
+        { threshold: 0 }
+      )
+
+      const postAI = document.querySelector('.post-TianliGPT')
+      if (postAI) {
+        observer.observe(postAI)
+      }
+
+      // 立即开始动画
+      requestAnimationFrame(animate)
+    }
+
     const initTianliGPT = async () => {
       console.log('loading tianliGPT', tianliKey, tianliTheme)
 
@@ -89,11 +150,14 @@ const TianLiGPT = () => {
               <div class="tianliGPT-title">
                 <i class="tianliGPT-title-icon">🍆</i>
                 <div class="tianliGPT-title-text">AI摘要</div>
-                <div class="tianliGPT-tag" id="tianliGPT-tag">aubergineGPT</div>
+                <div class="tianliGPT-tag loadingAI" id="tianliGPT-tag">aubergineGPT</div>
               </div>
-              <div class="tianliGPT-explanation">${data.summary}</div>
+              <div class="tianliGPT-explanation">生成中...<span class="blinking-cursor"></span></div>
             `
             container.insertBefore(aiDiv, container.firstChild)
+            
+            // 启动打字机效果
+            showTypingAnimation(data.summary)
             console.log('✅ TianliGPT 摘要已生成')
           } else if (data.err_msg) {
             console.warn('TianliGPT 错误:', data.err_msg)
