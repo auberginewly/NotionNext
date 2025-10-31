@@ -12,22 +12,21 @@ import { useEffect } from 'react'
 const TianLiGPT = () => {
   const tianliKey = siteConfig('TianliGPT_KEY')
   const tianliCss = siteConfig('TianliGPT_CSS')
-  const tianliJs = siteConfig('TianliGPT_JS')
   const tianliTheme = siteConfig('TianliGPT_THEME') || ''
 
   useEffect(() => {
     if (!tianliKey) return
 
     const initTianliGPT = async () => {
-      console.log('loading tianliGPT', tianliKey, tianliCss, tianliTheme)
+      console.log('loading tianliGPT', tianliKey, tianliTheme)
 
-      // 加载主题对应的 CSS
-      let cssUrl = tianliCss
+      // 设置全局主题变量(在加载 CSS 之前)
       if (tianliTheme) {
-        // 使用不同主题的 CSS: simple, yanzhi, menghuan
-        cssUrl = `https://ai.tianli0.top/static/public/tianli_gpt_${tianliTheme}.css`
+        window.tianliGPT_theme = tianliTheme
       }
-      await loadExternalResource(cssUrl, 'css')
+
+      // 加载 TianliGPT CSS
+      await loadExternalResource(tianliCss, 'css')
 
       // 等待页面渲染完成
       setTimeout(async () => {
@@ -80,6 +79,12 @@ const TianLiGPT = () => {
             // 插入 AI 摘要卡片
             const aiDiv = document.createElement('div')
             aiDiv.className = 'post-TianliGPT'
+            
+            // 如果设置了主题,添加主题类名
+            if (window.tianliGPT_theme) {
+              aiDiv.classList.add(`tianliGPT-theme-${window.tianliGPT_theme}`)
+            }
+            
             aiDiv.innerHTML = `
               <div class="tianliGPT-title">
                 <i class="tianliGPT-title-icon">🤖</i>
