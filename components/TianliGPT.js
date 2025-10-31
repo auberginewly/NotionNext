@@ -30,14 +30,20 @@ const TianLiGPT = () => {
       // 3. 加载 JS
       await loadExternalResource(tianliJs, 'js')
 
-      // 4. 重写 TianliGPT 的内容读取函数以适配 NotionNext
+      // 4. 等待 JS 完全加载并重写内容读取函数
       setTimeout(() => {
-        if (typeof window.tianliGPT === 'object') {
-          // 重写 getTitleAndContent 方法
+        // 检查 tianliGPT 对象是否存在
+        if (window.tianliGPT && window.tianliGPT.getTitleAndContent) {
+          console.log('重写 TianliGPT 内容读取方法')
+          
+          // 保存原始方法
+          const originalMethod = window.tianliGPT.getTitleAndContent
+          
+          // 重写为适配 NotionNext 的版本
           window.tianliGPT.getTitleAndContent = function() {
             try {
               const title = document.title
-              const container = document.querySelector(window.tianliGPT_postSelector)
+              const container = document.querySelector(window.tianliGPT_postSelector || '#notion-article')
               if (!container) {
                 console.warn('TianliGPT: 找不到文章容器')
                 return ''
@@ -71,14 +77,14 @@ const TianLiGPT = () => {
           }
         }
 
-        // 5. 触发 TianliGPT
+        // 5. 手动触发 TianliGPT
         if (typeof window.tianliGPT === 'function') {
           window.tianliGPT(false)
           console.log('tianliGPT triggered')
         } else {
           console.error('tianliGPT function not found')
         }
-      }, 500)
+      }, 1000) // 增加延迟到 1 秒
     }
 
     initTianliGPT()
