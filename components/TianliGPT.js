@@ -30,8 +30,48 @@ const TianLiGPT = () => {
       // 3. 加载 JS
       await loadExternalResource(tianliJs, 'js')
 
-      // 4. 等待 JS 加载完成后手动触发
+      // 4. 重写 TianliGPT 的内容读取函数以适配 NotionNext
       setTimeout(() => {
+        if (typeof window.tianliGPT === 'object') {
+          // 重写 getTitleAndContent 方法
+          window.tianliGPT.getTitleAndContent = function() {
+            try {
+              const title = document.title
+              const container = document.querySelector(window.tianliGPT_postSelector)
+              if (!container) {
+                console.warn('TianliGPT: 找不到文章容器')
+                return ''
+              }
+
+              // NotionNext 使用 .notion-text 而不是 <p> 标签
+              const notionTexts = container.querySelectorAll('.notion-text')
+              const headings = container.querySelectorAll('h1, h2, h3, h4, h5')
+              let content = ''
+
+              for (let h of headings) {
+                content += h.innerText + ' '
+              }
+
+              for (let t of notionTexts) {
+                content += t.innerText + ' '
+              }
+
+              const combinedText = title + ' ' + content
+              let wordLimit = 1000
+              if (typeof window.tianliGPT_wordLimit !== 'undefined') {
+                wordLimit = window.tianliGPT_wordLimit
+              }
+              const truncatedText = combinedText.slice(0, wordLimit)
+              console.log('TianliGPT 读取内容长度:', truncatedText.length)
+              return truncatedText
+            } catch (e) {
+              console.error('TianliGPT 读取内容失败:', e)
+              return ''
+            }
+          }
+        }
+
+        // 5. 触发 TianliGPT
         if (typeof window.tianliGPT === 'function') {
           window.tianliGPT(false)
           console.log('tianliGPT triggered')
