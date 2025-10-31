@@ -87,9 +87,9 @@ const TianLiGPT = () => {
             
             aiDiv.innerHTML = `
               <div class="tianliGPT-title">
-                <i class="tianliGPT-title-icon">🤖</i>
+                <i class="tianliGPT-title-icon">🍆</i>
                 <div class="tianliGPT-title-text">AI摘要</div>
-                <div class="tianliGPT-tag" id="tianliGPT-tag">TianliGPT</div>
+                <div class="tianliGPT-tag" id="tianliGPT-tag">aubergineGPT</div>
               </div>
               <div class="tianliGPT-explanation">${data.summary}</div>
             `
