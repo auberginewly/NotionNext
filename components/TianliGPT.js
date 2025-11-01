@@ -3,6 +3,7 @@
 import { siteConfig } from '@/lib/config'
 import { loadExternalResource } from '@/lib/utils'
 import { useEffect } from 'react'
+import { useRouter } from 'next/router'
 /**
  * TianliGpt AI文章摘要生成工具 @see https://docs_s.tianli0.top/
  * @returns {JSX.Element}
@@ -13,6 +14,7 @@ const TianLiGPT = () => {
   const tianliKey = siteConfig('TianliGPT_KEY')
   const tianliCss = siteConfig('TianliGPT_CSS')
   const tianliTheme = siteConfig('TianliGPT_THEME') || ''
+  const router = useRouter()
 
   useEffect(() => {
     if (!tianliKey) return
@@ -81,15 +83,23 @@ const TianLiGPT = () => {
     const initTianliGPT = async () => {
       console.log('loading tianliGPT', tianliKey, tianliTheme)
 
+      // 清理之前的 AI 摘要(防止重复插入)
+      const existingAI = document.querySelector('.post-TianliGPT')
+      if (existingAI) {
+        existingAI.remove()
+      }
+
       // 设置全局主题变量(在加载 CSS 之前)
       if (tianliTheme) {
         window.tianliGPT_theme = tianliTheme
       }
 
-      // 加载 TianliGPT CSS
-      await loadExternalResource(tianliCss, 'css')
+      // 加载 TianliGPT CSS(只加载一次)
+      if (!document.querySelector('link[href*="tianli_gpt"]')) {
+        await loadExternalResource(tianliCss, 'css')
+      }
 
-      // 等待页面渲染完成
+      // 等待页面渲染完成(延迟时间稍长,确保路由切换完成)
       setTimeout(async () => {
         const container = document.querySelector('#notion-article')
         if (!container) {
@@ -165,11 +175,11 @@ const TianLiGPT = () => {
         } catch (error) {
           console.error('TianliGPT API 调用失败:', error)
         }
-      }, 1000)
+      }, 1500) // 增加延迟时间,确保路由切换完成
     }
 
     initTianliGPT()
-  }, [tianliKey, tianliCss, tianliTheme])
+  }, [tianliKey, tianliCss, tianliTheme, router.asPath]) // 添加 router.asPath 依赖
 
   if (!tianliKey) {
     return null
